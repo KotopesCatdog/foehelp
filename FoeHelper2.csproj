@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>FoeHelper2</AssemblyName>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>True</UseWPF>
+    <TargetFramework>net461</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace />
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="drawingwindow.baml" />
+    <None Remove="miscwindow.baml" />
+    <None Remove="debugwindow.baml" />
+    <None Remove="updownnumber.baml" />
+    <None Remove="mainwindow.baml" />
+    <EmbeddedResource Include="drawingwindow.baml" LogicalName="drawingwindow.baml" />
+    <EmbeddedResource Include="miscwindow.baml" LogicalName="miscwindow.baml" />
+    <EmbeddedResource Include="debugwindow.baml" LogicalName="debugwindow.baml" />
+    <EmbeddedResource Include="updownnumber.baml" LogicalName="updownnumber.baml" />
+    <EmbeddedResource Include="mainwindow.baml" LogicalName="mainwindow.baml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="WindowsBase">
+      <HintPath>../.dotnet/shared/Microsoft.NETCore.App/6.0.36/WindowsBase.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple" />
+    <Reference Include="System.Text.Json" />
+    <Reference Include="Emgu.CV.World" />
+    <Reference Include="System.Xml">
+      <HintPath>../.dotnet/shared/Microsoft.NETCore.App/6.0.36/System.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>../.dotnet/shared/Microsoft.NETCore.App/6.0.36/System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <HintPath>../.dotnet/shared/Microsoft.NETCore.App/6.0.36/System.Xml.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="Tesseract" />
+    <Reference Include="ColorMine" />
+  </ItemGroup>
+</Project>
