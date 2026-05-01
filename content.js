@@ -82,18 +82,46 @@
     fileInput.click();
   }
 
+  // Рекурсивно ищем все объекты зданий (с полем "name") в JSON любой структуры
+  function flattenBuildings(data) {
+    var result = [];
+
+    if (Array.isArray(data)) {
+      data.forEach(function(item) {
+        if (item && typeof item === 'object') {
+          if (item.name && typeof item.name === 'string') {
+            result.push(item);
+          } else {
+            result = result.concat(flattenBuildings(item));
+          }
+        }
+      });
+    } else if (data && typeof data === 'object') {
+      // Если сам объект похож на здание — добавляем
+      if (data.name && typeof data.name === 'string' && (data.id != null || data.entityId)) {
+        result.push(data);
+      } else {
+        // Иначе ищем вглубь (byBuilding, values и т.д.)
+        Object.values(data).forEach(function(val) {
+          if (val && typeof val === 'object') {
+            result = result.concat(flattenBuildings(val));
+          }
+        });
+      }
+    }
+
+    return result;
+  }
+
   function processBuildingData(data) {
-    // Поддерживаем два формата верхнего уровня:
-    // 1. Объект { "2447": building, ... } (CityMapData из FoE Helper)
-    // 2. Массив [ building, ... ]
-    var buildings = Array.isArray(data) ? data : Object.values(data);
+    var buildings = flattenBuildings(data);
 
-    console.log('[FoE Overlay] Загружено объектов:', buildings.length);
-    console.log('[FoE Overlay] Тип данных:', Array.isArray(data) ? 'массив' : 'объект');
+    console.log('[FoE Overlay] Найдено объектов зданий:', buildings.length);
 
-    // Отладка: показываем первый объект для понимания структуры
+    // Отладка: показываем первые 3 имени
     if (buildings.length > 0) {
-      console.log('[FoE Overlay] Пример объекта:', JSON.stringify(buildings[0]).substring(0, 500));
+      var names = buildings.slice(0, 5).map(function(b) { return b.name; });
+      console.log('[FoE Overlay] Примеры зданий:', names);
     }
 
     var targetFound = [];
