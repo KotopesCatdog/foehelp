@@ -13,5 +13,9 @@
   },
   "action": {
     "default_title": "FoE City Overlay"
-  }
+  },
+  "web_accessible_resources": [{
+    "resources": ["extractor.js"],
+    "matches": ["*://*.forgeofempires.com/*"]
+  }]
 }
