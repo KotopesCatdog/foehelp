@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "FoE City Overlay",
+  "version": "1.2",
+  "description": "Изометрическая сетка поверх города в Forge of Empires с подсветкой зданий",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": [
+    "*://ru.forgeofempires.com/*",
+    "*://*.forgeofempires.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "FoE City Overlay"
+  }
+}
