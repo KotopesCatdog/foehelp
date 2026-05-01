@@ -83,33 +83,53 @@
   }
 
   function processBuildingData(data) {
-    // Поддерживаем два формата:
-    // 1. Объект { id: building, ... } (CityMapData)
+    // Поддерживаем два формата верхнего уровня:
+    // 1. Объект { "2447": building, ... } (CityMapData из FoE Helper)
     // 2. Массив [ building, ... ]
     var buildings = Array.isArray(data) ? data : Object.values(data);
     var found = [];
 
     buildings.forEach(function(b) {
-      if (!b || !b.name) return;
+      if (!b || typeof b !== 'object' || !b.name) return;
       var name = b.name.toLowerCase();
       if (!TARGET_NAMES.has(name)) return;
 
-      // Проверяем productions на resource === "money"
-      var prods = b.productions;
-      if (!Array.isArray(prods) || prods.length === 0) return;
+      // Проверяем производство на money в двух форматах:
+      //
+      // Формат CityMapData (FoE Helper):
+      //   state.production: [{ type: "resources", resources: { money: 21100 } }]
+      //
+      // Упрощённый формат:
+      //   productions: [{ type: "resources", resource: "money", amount: 21100 }]
 
-      var hasMoney = prods.some(function(p) {
-        return p.type === 'resources' && p.resource === 'money';
-      });
+      var hasMoney = false;
+
+      // Формат 1: state.production
+      var stateProd = b.state && b.state.production;
+      if (Array.isArray(stateProd)) {
+        hasMoney = stateProd.some(function(p) {
+          return p.type === 'resources' && p.resources && p.resources.money > 0;
+        });
+      }
+
+      // Формат 2: productions
+      if (!hasMoney && Array.isArray(b.productions)) {
+        hasMoney = b.productions.some(function(p) {
+          return p.type === 'resources' && p.resource === 'money';
+        });
+      }
+
       if (!hasMoney) return;
 
-      found.push({
-        x: b.x != null ? b.x : 0,
-        y: b.y != null ? b.y : 0,
-        w: b.width || 1,
-        h: b.height || 1,
-        name: b.name
-      });
+      // Координаты: coords.x/y или b.x/y
+      var bx = (b.coords && b.coords.x != null) ? b.coords.x : (b.x != null ? b.x : 0);
+      var by = (b.coords && b.coords.y != null) ? b.coords.y : (b.y != null ? b.y : 0);
+
+      // Размер: size.width/length или b.width/b.height
+      var bw = (b.size && b.size.width) || b.width || 1;
+      var bh = (b.size && b.size.length) || b.height || 1;
+
+      found.push({ x: bx, y: by, w: bw, h: bh, name: b.name });
     });
 
     highlightedBuildings = found;
