@@ -148,6 +148,24 @@
   background: rgba(76, 175, 80, 0.4);
 }
 
+/* Кнопка «Автонастройка» */
+#foe-ov-autofit {
+  width: 100%;
+  padding: 5px;
+  background: rgba(166, 227, 161, 0.1);
+  border: 1px solid rgba(166, 227, 161, 0.4);
+  border-radius: 5px;
+  color: #a6e3a1;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: background .15s;
+}
+#foe-ov-autofit:hover {
+  background: rgba(166, 227, 161, 0.2);
+}
+
 /* Кнопка «Загрузить JSON» (запасной вариант) */
 #foe-ov-load-json {
   width: 100%;

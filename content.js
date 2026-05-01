@@ -46,10 +46,15 @@
     { key: 'random_good_of_age', label: '🎁 Товары эпохи',   color: '#89dceb' },
   ];
 
+  // Размер игрового поля в клетках
+  const MAP_SIZE = 72;
+
   // Список зданий для подсветки: [{ x, y, w, h, name, prodKey }]
   let highlightedBuildings = [];
   // Сохраняем все данные после загрузки JSON для перефильтрации
   let lastLoadedData = null;
+  // Все здания с координатами (для автонастройки)
+  let allBuildingsWithCoords = [];
 
   // ── ЗАГРУЗКА ДАННЫХ ИЗ JSON ФАЙЛА ─────────────────────────
   // Пользователь экспортирует данные из FoE Helper в JSON,
@@ -181,6 +186,18 @@
 
   function processBuildingData(data) {
     lastLoadedData = data;
+
+    // Сохраняем все здания с координатами для автонастройки
+    var allBuildings = flattenBuildings(data);
+    allBuildingsWithCoords = [];
+    allBuildings.forEach(function(b) {
+      var bx = (b.coords && b.coords.x != null) ? b.coords.x : (b.x != null ? b.x : null);
+      var by = (b.coords && b.coords.y != null) ? b.coords.y : (b.y != null ? b.y : null);
+      if (bx != null && by != null) {
+        allBuildingsWithCoords.push({ x: bx, y: by });
+      }
+    });
+
     filterAndHighlight();
   }
 
@@ -250,6 +267,7 @@
     <div id="foe-overlay-body">
 
       <button id="foe-ov-extract">🔍 Извлечь данные</button>
+      <button id="foe-ov-autofit" class="foe-ov-btn-secondary">🎯 Автонастройка</button>
       <button id="foe-ov-load-json" class="foe-ov-btn-secondary">📂 Загрузить JSON</button>
       <div id="foe-ov-status" class="foe-ov-status-text"></div>
 
@@ -313,8 +331,8 @@
       </div>
 
       <div class="foe-ov-hint">
-        «Извлечь данные» — берёт из FoE Helper.<br>
-        «Загрузить JSON» — из файла.<br>
+        «Извлечь» — берёт из FoE Helper.<br>
+        «Автонастройка» — выравнивает сетку.<br>
         Тащи панель за заголовок.
       </div>
 
@@ -352,6 +370,32 @@
         updateStatus('Данные не найдены');
       }
     });
+  });
+
+  // ── КНОПКА «АВТОНАСТРОЙКА» ────────────────────────
+  document.getElementById('foe-ov-autofit').addEventListener('click', function() {
+    if (allBuildingsWithCoords.length === 0) {
+      updateStatus('Сначала извлеките данные');
+      return;
+    }
+
+    // Находим минимальные координаты — это начало поля
+    var minX = Infinity, minY = Infinity;
+    allBuildingsWithCoords.forEach(function(b) {
+      if (b.x < minX) minX = b.x;
+      if (b.y < minY) minY = b.y;
+    });
+
+    // Устанавливаем смещение начала координат по минимальным координатам
+    cfg.isoA = minX;
+    cfg.isoB = minY;
+    cfg.cols = MAP_SIZE;
+    cfg.rows = MAP_SIZE;
+
+    syncSliders();
+    draw();
+    save();
+    updateStatus('Сетка ' + MAP_SIZE + '×' + MAP_SIZE + ', начало (' + minX + ',' + minY + ')');
   });
 
   // ── КНОПКА «ЗАГРУЗИТЬ JSON» (запасной вариант) ─────────────
