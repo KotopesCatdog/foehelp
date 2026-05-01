@@ -148,6 +148,25 @@
   background: rgba(76, 175, 80, 0.4);
 }
 
+/* Кнопка «Загрузить JSON» (запасной вариант) */
+#foe-ov-load-json {
+  width: 100%;
+  padding: 5px;
+  background: rgba(108, 122, 153, 0.1);
+  border: 1px solid rgba(108, 122, 153, 0.3);
+  border-radius: 5px;
+  color: #6c7a99;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: background .15s;
+}
+#foe-ov-load-json:hover {
+  background: rgba(108, 122, 153, 0.2);
+  color: #8892aa;
+}
+
 /* Статус извлечения */
 .foe-ov-status-text {
   font-size: 10px;

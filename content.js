@@ -249,7 +249,8 @@
     </div>
     <div id="foe-overlay-body">
 
-      <button id="foe-ov-extract">📂 Загрузить JSON</button>
+      <button id="foe-ov-extract">🔍 Извлечь данные</button>
+      <button id="foe-ov-load-json" class="foe-ov-btn-secondary">📂 Загрузить JSON</button>
       <div id="foe-ov-status" class="foe-ov-status-text"></div>
 
       <div class="foe-ov-divider"></div>
@@ -312,9 +313,9 @@
       </div>
 
       <div class="foe-ov-hint">
-        Тащи панель за заголовок.<br>
-        Нажми «сетка» чтобы скрыть линии.<br>
-        Кнопка ✕ прячет панель.
+        «Извлечь данные» — берёт из FoE Helper.<br>
+        «Загрузить JSON» — из файла.<br>
+        Тащи панель за заголовок.
       </div>
 
       <div class="foe-ov-divider"></div>
@@ -329,8 +330,32 @@
   `;
   document.body.appendChild(panel);
 
-  // ── КНОПКА «ЗАГРУЗИТЬ JSON» ─────────────────────────────
+  // ── КНОПКА «ИЗВЛЕЧЬ ДАННЫЕ» (из MainParser) ──────────────
   document.getElementById('foe-ov-extract').addEventListener('click', function() {
+    updateStatus('Извлекаю...');
+    chrome.runtime.sendMessage({ type: 'foe-extract-citymap' }, function(response) {
+      if (chrome.runtime.lastError) {
+        updateStatus('Ошибка: ' + chrome.runtime.lastError.message);
+        return;
+      }
+      if (!response) {
+        updateStatus('Нет ответа от background');
+        return;
+      }
+      if (response.error) {
+        updateStatus('Ошибка: ' + response.error);
+        return;
+      }
+      if (response.data) {
+        processBuildingData(response.data);
+      } else {
+        updateStatus('Данные не найдены');
+      }
+    });
+  });
+
+  // ── КНОПКА «ЗАГРУЗИТЬ JSON» (запасной вариант) ─────────────
+  document.getElementById('foe-ov-load-json').addEventListener('click', function() {
     updateStatus('Загрузка...');
     extractBuildingData();
   });
