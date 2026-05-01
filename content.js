@@ -236,7 +236,7 @@
   // Кнопка-открывалка (когда панель скрыта)
   const openBtn = document.createElement('button');
   openBtn.id = 'foe-overlay-open-btn';
-  openBtn.textContent = '⬡ FoE Grid';
+  openBtn.textContent = '⛄';
   document.body.appendChild(openBtn);
 
   // Панель управления

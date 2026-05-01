@@ -204,25 +204,34 @@
   user-select: none;
 }
 
-/* Toggle кнопка когда панель скрыта */
+/* Toggle кнопка когда панель скрыта — стиль иконок FoE */
 #foe-overlay-open-btn {
   position: fixed;
   z-index: 999999;
   top: 80px;
-  right: 16px;
-  background: rgba(10,13,20,0.85);
-  border: 1px solid rgba(232,160,32,0.5);
-  border-radius: 6px;
-  color: #e8a020;
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 1px;
-  padding: 5px 10px;
+  right: 3px;
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(180deg, rgba(60,50,30,0.92) 0%, rgba(35,28,15,0.95) 100%);
+  border: 2px solid rgba(160,130,60,0.7);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 24px;
+  line-height: 46px;
+  text-align: center;
+  padding: 0;
   cursor: pointer;
   display: none;
-  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: border-color .15s, transform .1s;
 }
-#foe-overlay-open-btn:hover { background: rgba(232,160,32,0.15); }
+#foe-overlay-open-btn:hover {
+  border-color: rgba(232,180,60,0.9);
+  transform: scale(1.05);
+}
+#foe-overlay-open-btn:active {
+  transform: scale(0.95);
+}
 
 /* Canvas */
 #foe-overlay-canvas {
