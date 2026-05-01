@@ -12,12 +12,12 @@
 
   // ── ДЕФОЛТНЫЕ НАСТРОЙКИ ──────────────────────────────────
   const DEFAULTS = {
-    isoA:       20,   // сдвиг вдоль оси колонок (вправо-вниз)
-    isoB:       20,   // сдвиг вдоль оси рядов   (влево-вниз)
-    tileW:      58,   // ширина одной клетки (горизонталь)
-    tileH:      29,   // высота одной клетки (вертикаль)
-    cols:       50,   // количество колонок сетки
-    rows:       50,   // количество рядов сетки
+    isoA:       40,   // сдвиг вдоль оси колонок (вправо-вниз)
+    isoB:       40,   // сдвиг вдоль оси рядов   (влево-вниз)
+    tileW:      29,   // ширина одной клетки (горизонталь)
+    tileH:      15,   // высота одной клетки (вертикаль)
+    cols:      100,   // количество колонок сетки
+    rows:      100,   // количество рядов сетки
     opacity:    0.55, // прозрачность линий
     visible:    true  // показывать ли сетку
   };
@@ -223,13 +223,13 @@
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">↘ Ось X</span>
-        <input type="range" id="ov-isoA" min="0" max="150" step="1">
+        <input type="range" id="ov-isoA" min="0" max="300" step="1">
         <span class="foe-ov-val" id="val-isoA"></span>
       </div>
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">↙ Ось Y</span>
-        <input type="range" id="ov-isoB" min="-80" max="150" step="1">
+        <input type="range" id="ov-isoB" min="-80" max="300" step="1">
         <span class="foe-ov-val" id="val-isoB"></span>
       </div>
 
@@ -237,13 +237,13 @@
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">Клетка W</span>
-        <input type="range" id="ov-tileW" min="20" max="160" step="1">
+        <input type="range" id="ov-tileW" min="5" max="160" step="1">
         <span class="foe-ov-val" id="val-tileW"></span>
       </div>
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">Клетка H</span>
-        <input type="range" id="ov-tileH" min="10" max="80" step="1">
+        <input type="range" id="ov-tileH" min="3" max="80" step="1">
         <span class="foe-ov-val" id="val-tileH"></span>
       </div>
 
@@ -251,13 +251,13 @@
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">Колонки</span>
-        <input type="range" id="ov-cols" min="5" max="120" step="1">
+        <input type="range" id="ov-cols" min="5" max="200" step="1">
         <span class="foe-ov-val" id="val-cols"></span>
       </div>
 
       <div class="foe-ov-row">
         <span class="foe-ov-label">Ряды</span>
-        <input type="range" id="ov-rows" min="5" max="120" step="1">
+        <input type="range" id="ov-rows" min="5" max="200" step="1">
         <span class="foe-ov-val" id="val-rows"></span>
       </div>
 
@@ -477,11 +477,11 @@
       }
     }
 
-    // Суб-сетка (шаг 0.5)
-    drawLines(0.5, 1, opacity * 0.3);
+    // Мелкая сетка (каждая клетка = 1 тайл игры)
+    drawLines(1, 1, opacity * 0.3);
 
-    // Основная сетка (шаг 1)
-    drawLines(1, 2, opacity);
+    // Крупная сетка (каждые 4 клетки — жирные линии)
+    drawLines(4, 2, opacity);
 
     // Начало координат (0,0) — зелёный ромб
     const o0 = isoPoint(0, 0);
@@ -506,17 +506,17 @@
     ctx.textAlign   = 'center';
     ctx.fillText('0,0', o0.x, o0.y - 5);
 
-    // Номера осей через каждые 5 клеток
+    // Номера осей через каждые 10 клеток
     ctx.globalAlpha = opacity * 0.7;
     ctx.fillStyle   = '#e8a020';
     ctx.font        = '10px "Share Tech Mono", monospace';
 
-    for (let c = 0; c <= cols; c += 5) {
+    for (let c = 0; c <= cols; c += 10) {
       const p = isoPoint(c, 0);
       ctx.textAlign = 'center';
       ctx.fillText('x' + c, p.x, p.y - 4);
     }
-    for (let r = 0; r <= rows; r += 5) {
+    for (let r = 0; r <= rows; r += 10) {
       const p = isoPoint(0, r);
       ctx.textAlign = 'right';
       ctx.fillText('y' + r, p.x - 4, p.y + 3);
@@ -570,14 +570,16 @@
   // ── ХРАНЕНИЕ НАСТРОЕК ────────────────────────────────────
   function save() {
     try {
-      chrome.storage.local.set({ foeOverlayCfg: cfg });
+      chrome.storage.local.set({ foeOverlayCfg: { ...cfg, _v: CFG_VERSION } });
     } catch (e) {}
   }
+
+  const CFG_VERSION = 2; // увеличить при изменении дефолтов
 
   function loadAndInit() {
     try {
       chrome.storage.local.get('foeOverlayCfg', result => {
-        if (result && result.foeOverlayCfg) {
+        if (result && result.foeOverlayCfg && result.foeOverlayCfg._v === CFG_VERSION) {
           cfg = { ...DEFAULTS, ...result.foeOverlayCfg };
         }
         toggleVis.textContent = cfg.visible ? 'сетка ВКЛ' : 'сетка ВЫКЛ';
