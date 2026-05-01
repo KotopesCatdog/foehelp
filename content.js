@@ -525,10 +525,13 @@
     // ── Подсветка зданий с money ───────────────────────────
     if (highlightedBuildings.length > 0) {
       highlightedBuildings.forEach(b => {
-        const top   = isoPoint(b.x,       b.y      );
-        const right = isoPoint(b.x + b.w, b.y      );
-        const bot   = isoPoint(b.x + b.w, b.y + b.h);
-        const left  = isoPoint(b.x,       b.y + b.h);
+        // Коррекция координат (+2 в каждую ось)
+        const bx = b.x + 2;
+        const by = b.y + 2;
+        const top   = isoPoint(bx,       by      );
+        const right = isoPoint(bx + b.w, by      );
+        const bot   = isoPoint(bx + b.w, by + b.h);
+        const left  = isoPoint(bx,       by + b.h);
 
         // Заливка — золотая
         ctx.globalAlpha = 0.35;
