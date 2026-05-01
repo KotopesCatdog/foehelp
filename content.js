@@ -41,63 +41,61 @@
   // Список зданий для подсветки: [{ x, y, w, h, name }]
   let highlightedBuildings = [];
 
-  // ── ИЗВЛЕЧЕНИЕ ДАННЫХ ЧЕРЕЗ ИНЖЕКТ В СТРАНИЦУ ────────────
+  // ── ИЗВЛЕЧЕНИЕ ДАННЫХ ──────────────────────────────────────
   // Content script работает в изолированном мире и не имеет
-  // доступа к window.MainParser. Инжектируем скрипт в контекст
-  // страницы, который читает CityMapData и передаёт обратно
-  // через postMessage.
+  // доступа к window.MainParser (FoE Helper). Отправляем запрос
+  // в background.js, который выполняет скрипт в MAIN world
+  // страницы через chrome.scripting.executeScript.
 
   function extractBuildingData() {
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('extractor.js');
-    script.onload = function() { script.remove(); };
-    script.onerror = function() {
-      script.remove();
-      updateStatus('Ошибка загрузки extractor.js');
-    };
-    document.documentElement.appendChild(script);
-  }
+    chrome.runtime.sendMessage({ type: 'foe-extract-buildings' }, function(response) {
+      if (chrome.runtime.lastError) {
+        console.warn('FoE Overlay:', chrome.runtime.lastError.message);
+        updateStatus('Ошибка: ' + chrome.runtime.lastError.message);
+        return;
+      }
 
-  // Слушаем ответ от инжектированного скрипта
-  window.addEventListener('message', function(event) {
-    if (event.source !== window) return;
-    if (!event.data || event.data.type !== 'foe-overlay-buildings') return;
+      if (!response) {
+        updateStatus('Ошибка: нет ответа от background');
+        return;
+      }
 
-    var buildings = event.data.buildings || [];
+      if (response.error) {
+        console.warn('FoE Overlay:', response.error);
+        updateStatus('Ошибка: ' + response.error);
+        return;
+      }
 
-    if (event.data.error) {
-      console.warn('FoE Overlay:', event.data.error);
-      updateStatus('Ошибка: ' + event.data.error);
-      return;
-    }
+      var buildings = response.buildings || [];
+      var found = [];
 
-    var found = [];
-    buildings.forEach(function(b) {
-      var name = b.name.toLowerCase();
-      if (!TARGET_NAMES.has(name)) return;
+      buildings.forEach(function(b) {
+        var name = b.name.toLowerCase();
+        if (!TARGET_NAMES.has(name)) return;
 
-      // Проверяем productions на resource === "money"
-      var prods = b.productions;
-      if (!Array.isArray(prods) || prods.length === 0) return;
+        // Проверяем productions на resource === "money"
+        var prods = b.productions;
+        if (!Array.isArray(prods) || prods.length === 0) return;
 
-      var hasMoney = prods.some(function(p) {
-        return p.type === 'resources' && p.resource === 'money';
+        var hasMoney = prods.some(function(p) {
+          return p.type === 'resources' && p.resource === 'money';
+        });
+        if (!hasMoney) return;
+
+        found.push({
+          x: b.x,
+          y: b.y,
+          w: b.width,
+          h: b.height,
+          name: b.name
+        });
       });
-      if (!hasMoney) return;
 
-      found.push({
-        x: b.x,
-        y: b.y,
-        w: b.width,
-        h: b.height,
-        name: b.name
-      });
+      highlightedBuildings = found;
+      draw();
+      updateStatus('Найдено зданий: ' + found.length);
     });
-
-    highlightedBuildings = found;
-    draw();
-    updateStatus('Найдено зданий: ' + found.length);
-  });
+  }
 
   // ── DOM ──────────────────────────────────────────────────
   const canvas = document.createElement('canvas');
