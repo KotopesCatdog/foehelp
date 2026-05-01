@@ -537,7 +537,7 @@
       openBtn.style.display = 'none';
     } else {
       panel.classList.add('hidden');
-      openBtn.style.display = 'none';
+      openBtn.style.display = 'block';
     }
   });
 
