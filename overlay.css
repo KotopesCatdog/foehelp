@@ -157,6 +157,34 @@
   text-align: center;
 }
 
+/* Секция чекбоксов производств */
+.foe-ov-section-label {
+  font-size: 10px;
+  color: #6c7a99;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.foe-ov-cb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--cb-color, #c0c8e0);
+}
+.foe-ov-cb-row input[type="checkbox"] {
+  accent-color: var(--cb-color, #e8a020);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  margin: 0;
+}
+.foe-ov-cb-row span {
+  user-select: none;
+}
+
 /* Toggle кнопка когда панель скрыта */
 #foe-overlay-open-btn {
   position: fixed;

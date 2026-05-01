@@ -25,21 +25,31 @@
   let cfg = { ...DEFAULTS };
 
   // ── ЦЕЛЕВЫЕ ЗДАНИЯ ───────────────────────────────────────
-  // Все имена приведены к нижнему регистру для сравнения
   const TARGET_NAMES = new Set([
     'фонтан молодости',
     'маленький фонтан молодости',
     'колодец желаний',
     'маленький колодец желаний',
-    // английские названия на случай другой локали
     'fountain of youth',
     'small fountain of youth',
     'wishing well',
     'small wishing well',
   ]);
 
-  // Список зданий для подсветки: [{ x, y, w, h, name }]
+  // ── ТИПЫ ПРОИЗВОДСТВ ──────────────────────────────────────
+  const PRODUCTION_TYPES = [
+    { key: 'premium',            label: '💎 Алмазы',         color: '#b4befe' },
+    { key: 'medals',             label: '🏅 Медали',         color: '#fab387' },
+    { key: 'strategy_points',    label: '🧠 Стратег. очки',  color: '#cba6f7' },
+    { key: 'money',              label: '🪙 Монеты',         color: '#f9e2af' },
+    { key: 'supplies',           label: '📦 Припасы',        color: '#a6e3a1' },
+    { key: 'random_good_of_age', label: '🎁 Товары эпохи',   color: '#89dceb' },
+  ];
+
+  // Список зданий для подсветки: [{ x, y, w, h, name, prodKey }]
   let highlightedBuildings = [];
+  // Сохраняем все данные после загрузки JSON для перефильтрации
+  let lastLoadedData = null;
 
   // ── ЗАГРУЗКА ДАННЫХ ИЗ JSON ФАЙЛА ─────────────────────────
   // Пользователь экспортирует данные из FoE Helper в JSON,
@@ -118,18 +128,75 @@
     return result;
   }
 
-  function processBuildingData(data) {
-    var buildings = flattenBuildings(data);
+  // Получаем выбранные чекбоксы производств
+  function getSelectedProdTypes() {
+    var selected = new Set();
+    PRODUCTION_TYPES.forEach(function(pt) {
+      var cb = document.getElementById('foe-cb-' + pt.key);
+      if (cb && cb.checked) selected.add(pt.key);
+    });
+    return selected;
+  }
 
-    console.log('[FoE Overlay] Найдено объектов зданий:', buildings.length);
+  // Получаем цвет для типа производства
+  function getProdColor(key) {
+    for (var i = 0; i < PRODUCTION_TYPES.length; i++) {
+      if (PRODUCTION_TYPES[i].key === key) return PRODUCTION_TYPES[i].color;
+    }
+    return '#f9e2af';
+  }
 
-    // Отладка: показываем первые 3 имени
-    if (buildings.length > 0) {
-      var names = buildings.slice(0, 5).map(function(b) { return b.name; });
-      console.log('[FoE Overlay] Примеры зданий:', names);
+  // Извлекаем subType/id производств из здания (поддержка разных форматов)
+  function getBuildingProdKeys(b) {
+    var keys = new Set();
+
+    // Формат 1: resources массив [{subType:"money",...}, ...] (новый формат)
+    if (Array.isArray(b.resources)) {
+      b.resources.forEach(function(r) {
+        if (r.subType) keys.add(r.subType);
+        else if (r.id) keys.add(r.id);
+      });
     }
 
-    var targetFound = [];
+    // Формат 2: state.production [{type:"resources", resources:{money:N}}]
+    var stateProd = b.state && b.state.production;
+    if (Array.isArray(stateProd)) {
+      stateProd.forEach(function(p) {
+        if (p.resources) {
+          Object.keys(p.resources).forEach(function(k) { keys.add(k); });
+        }
+      });
+    }
+
+    // Формат 3: productions [{resource:"money", subType:"money"}]
+    if (Array.isArray(b.productions)) {
+      b.productions.forEach(function(p) {
+        if (p.subType) keys.add(p.subType);
+        else if (p.resource) keys.add(p.resource);
+      });
+    }
+
+    return keys;
+  }
+
+  function processBuildingData(data) {
+    lastLoadedData = data;
+    filterAndHighlight();
+  }
+
+  function filterAndHighlight() {
+    if (!lastLoadedData) return;
+
+    var buildings = flattenBuildings(lastLoadedData);
+    var selectedTypes = getSelectedProdTypes();
+
+    if (selectedTypes.size === 0) {
+      highlightedBuildings = [];
+      draw();
+      updateStatus('Выберите тип производства');
+      return;
+    }
+
     var found = [];
 
     buildings.forEach(function(b) {
@@ -137,66 +204,27 @@
       var name = b.name.toLowerCase();
       if (!TARGET_NAMES.has(name)) return;
 
-      // Это целевое здание — логируем всю инфу о производстве
-      targetFound.push(b.name);
-      console.log('[FoE Overlay] Целевое здание:', b.name, 'id:', b.id);
-      console.log('[FoE Overlay]   state:', JSON.stringify(b.state));
-      console.log('[FoE Overlay]   productions:', JSON.stringify(b.productions));
-      console.log('[FoE Overlay]   production:', JSON.stringify(b.production));
-      console.log('[FoE Overlay]   coords:', JSON.stringify(b.coords));
-      console.log('[FoE Overlay]   size:', JSON.stringify(b.size));
+      var prodKeys = getBuildingProdKeys(b);
 
-      // Проверяем производство на money в нескольких форматах
-      var hasMoney = false;
+      // Находим первый совпавший тип
+      var matchedKey = null;
+      selectedTypes.forEach(function(sel) {
+        if (!matchedKey && prodKeys.has(sel)) matchedKey = sel;
+      });
 
-      // Формат 1: state.production [{type:"resources", resources:{money:N}}]
-      var stateProd = b.state && b.state.production;
-      if (Array.isArray(stateProd)) {
-        hasMoney = stateProd.some(function(p) {
-          return p.type === 'resources' && p.resources && p.resources.money > 0;
-        });
-        console.log('[FoE Overlay]   state.production check:', hasMoney);
-      }
+      if (!matchedKey) return;
 
-      // Формат 2: productions [{type:"resources", resource:"money"}]
-      if (!hasMoney && Array.isArray(b.productions)) {
-        hasMoney = b.productions.some(function(p) {
-          return p.type === 'resources' && p.resource === 'money';
-        });
-        console.log('[FoE Overlay]   productions check:', hasMoney);
-      }
-
-      // Формат 3: production (не массив state.production, а поле верхнего уровня)
-      if (!hasMoney && Array.isArray(b.production)) {
-        hasMoney = b.production.some(function(p) {
-          if (p.type === 'resources' && p.resources && p.resources.money > 0) return true;
-          if (p.type === 'resources' && p.resource === 'money') return true;
-          return false;
-        });
-        console.log('[FoE Overlay]   production (top-level) check:', hasMoney);
-      }
-
-      console.log('[FoE Overlay]   hasMoney итого:', hasMoney);
-
-      if (!hasMoney) return;
-
-      // Координаты: coords.x/y или b.x/y
       var bx = (b.coords && b.coords.x != null) ? b.coords.x : (b.x != null ? b.x : 0);
       var by = (b.coords && b.coords.y != null) ? b.coords.y : (b.y != null ? b.y : 0);
-
-      // Размер: size.width/length или b.width/b.height
       var bw = (b.size && b.size.width) || b.width || 1;
       var bh = (b.size && b.size.length) || b.height || 1;
 
-      found.push({ x: bx, y: by, w: bw, h: bh, name: b.name });
+      found.push({ x: bx, y: by, w: bw, h: bh, name: b.name, prodKey: matchedKey });
     });
-
-    console.log('[FoE Overlay] Целевых зданий найдено по имени:', targetFound.length, targetFound);
-    console.log('[FoE Overlay] Из них с money:', found.length);
 
     highlightedBuildings = found;
     draw();
-    updateStatus('Найдено зданий: ' + found.length + ' (целевых: ' + targetFound.length + ')');
+    updateStatus('Найдено зданий: ' + found.length);
   }
 
   // ── DOM ──────────────────────────────────────────────────
@@ -223,6 +251,15 @@
 
       <button id="foe-ov-extract">📂 Загрузить JSON</button>
       <div id="foe-ov-status" class="foe-ov-status-text"></div>
+
+      <div class="foe-ov-divider"></div>
+
+      <div class="foe-ov-section-label">Производство:</div>
+      ${PRODUCTION_TYPES.map(function(pt) {
+        return '<label class="foe-ov-cb-row" style="--cb-color:' + pt.color + '">' +
+          '<input type="checkbox" id="foe-cb-' + pt.key + '" checked>' +
+          '<span>' + pt.label + '</span></label>';
+      }).join('\n      ')}
 
       <div class="foe-ov-divider"></div>
 
@@ -292,9 +329,9 @@
   `;
   document.body.appendChild(panel);
 
-  // ── КНОПКА «ИЗВЛЕЧЬ ДАННЫЕ» ──────────────────────────────
+  // ── КНОПКА «ЗАГРУЗИТЬ JSON» ─────────────────────────────
   document.getElementById('foe-ov-extract').addEventListener('click', function() {
-    updateStatus('Извлечение данных...');
+    updateStatus('Загрузка...');
     extractBuildingData();
   });
 
@@ -302,6 +339,16 @@
     var el = document.getElementById('foe-ov-status');
     if (el) el.textContent = text;
   }
+
+  // ── ЧЕКБОКСЫ ПРОИЗВОДСТВ ──────────────────────────────────
+  PRODUCTION_TYPES.forEach(function(pt) {
+    var cb = document.getElementById('foe-cb-' + pt.key);
+    if (cb) {
+      cb.addEventListener('change', function() {
+        filterAndHighlight();
+      });
+    }
+  });
 
   // ── СЛАЙДЕРЫ ─────────────────────────────────────────────
   const sliders = [
@@ -527,10 +574,9 @@
       ctx.fillText('y' + r, p.x - 4, p.y + 3);
     }
 
-    // ── Подсветка зданий с money ───────────────────────────
+    // ── Подсветка зданий по выбранным производствам ─────────
     if (highlightedBuildings.length > 0) {
       highlightedBuildings.forEach(b => {
-        // Коррекция координат (+2 в каждую ось)
         const bx = b.x + 2;
         const by = b.y + 2;
         const top   = isoPoint(bx,       by      );
@@ -538,9 +584,11 @@
         const bot   = isoPoint(bx + b.w, by + b.h);
         const left  = isoPoint(bx,       by + b.h);
 
-        // Заливка — золотая
+        const color = getProdColor(b.prodKey);
+
+        // Заливка
         ctx.globalAlpha = 0.35;
-        ctx.fillStyle   = '#f9e2af';
+        ctx.fillStyle   = color;
         ctx.beginPath();
         ctx.moveTo(top.x,   top.y);
         ctx.lineTo(right.x, right.y);
@@ -551,7 +599,7 @@
 
         // Обводка
         ctx.globalAlpha = 0.9;
-        ctx.strokeStyle = '#f9e2af';
+        ctx.strokeStyle = color;
         ctx.lineWidth   = 2;
         ctx.beginPath();
         ctx.moveTo(top.x,   top.y);
@@ -561,14 +609,19 @@
         ctx.closePath();
         ctx.stroke();
 
-        // Иконка монеты в центре здания
+        // Иконка в центре
         const cx = (top.x + bot.x) / 2;
         const cy = (top.y + bot.y) / 2;
         ctx.globalAlpha = 1;
         ctx.font        = `${Math.max(12, cfg.tileH * b.h * 0.5)}px serif`;
         ctx.textAlign   = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('🪙', cx, cy);
+
+        const icons = {
+          premium: '💎', medals: '🏅', strategy_points: '🧠',
+          money: '🪙', supplies: '📦', random_good_of_age: '🎁'
+        };
+        ctx.fillText(icons[b.prodKey] || '●', cx, cy);
       });
     }
 
