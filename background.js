@@ -17,7 +17,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
     if (result && result.result) {
       // Overlay уже есть — toggle панели
-      chrome.tabs.sendMessage(tab.id, { type: 'foe-overlay-toggle' });
+      chrome.tabs.sendMessage(tab.id, { type: 'foe-overlay-toggle' }).catch(() => {});
     } else {
       // Первый раз — инжектируем CSS и JS
       await chrome.scripting.insertCSS({
