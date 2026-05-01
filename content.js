@@ -82,14 +82,21 @@
     fileInput.click();
   }
 
-  // Рекурсивно ищем все объекты зданий (с полем "name") в JSON любой структуры
+  // Проверяем, похож ли объект на здание (name + id или entityId)
+  function isBuilding(obj) {
+    return obj && typeof obj === 'object'
+      && typeof obj.name === 'string'
+      && (obj.id != null || obj.entityId);
+  }
+
+  // Рекурсивно ищем все объекты зданий в JSON любой структуры
   function flattenBuildings(data) {
     var result = [];
 
     if (Array.isArray(data)) {
       data.forEach(function(item) {
         if (item && typeof item === 'object') {
-          if (item.name && typeof item.name === 'string') {
+          if (isBuilding(item)) {
             result.push(item);
           } else {
             result = result.concat(flattenBuildings(item));
@@ -97,11 +104,9 @@
         }
       });
     } else if (data && typeof data === 'object') {
-      // Если сам объект похож на здание — добавляем
-      if (data.name && typeof data.name === 'string' && (data.id != null || data.entityId)) {
+      if (isBuilding(data)) {
         result.push(data);
       } else {
-        // Иначе ищем вглубь (byBuilding, values и т.д.)
         Object.values(data).forEach(function(val) {
           if (val && typeof val === 'object') {
             result = result.concat(flattenBuildings(val));
