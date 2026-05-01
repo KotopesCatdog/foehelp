@@ -41,60 +41,80 @@
   // Список зданий для подсветки: [{ x, y, w, h, name }]
   let highlightedBuildings = [];
 
-  // ── ИЗВЛЕЧЕНИЕ ДАННЫХ ──────────────────────────────────────
-  // Content script работает в изолированном мире и не имеет
-  // доступа к window.MainParser (FoE Helper). Отправляем запрос
-  // в background.js, который выполняет скрипт в MAIN world
-  // страницы через chrome.scripting.executeScript.
+  // ── ЗАГРУЗКА ДАННЫХ ИЗ JSON ФАЙЛА ─────────────────────────
+  // Пользователь экспортирует данные из FoE Helper в JSON,
+  // затем загружает файл через кнопку в панели.
+
+  // Скрытый input для выбора файла
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.json';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  fileInput.addEventListener('change', function() {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    updateStatus('Чтение файла...');
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        processBuildingData(data);
+      } catch (err) {
+        console.warn('FoE Overlay: ошибка парсинга JSON:', err);
+        updateStatus('Ошибка: невалидный JSON');
+      }
+    };
+
+    reader.onerror = function() {
+      updateStatus('Ошибка чтения файла');
+    };
+
+    reader.readAsText(file);
+    // Сбрасываем input чтобы можно было выбрать тот же файл повторно
+    fileInput.value = '';
+  });
 
   function extractBuildingData() {
-    chrome.runtime.sendMessage({ type: 'foe-extract-buildings' }, function(response) {
-      if (chrome.runtime.lastError) {
-        console.warn('FoE Overlay:', chrome.runtime.lastError.message);
-        updateStatus('Ошибка: ' + chrome.runtime.lastError.message);
-        return;
-      }
+    fileInput.click();
+  }
 
-      if (!response) {
-        updateStatus('Ошибка: нет ответа от background');
-        return;
-      }
+  function processBuildingData(data) {
+    // Поддерживаем два формата:
+    // 1. Объект { id: building, ... } (CityMapData)
+    // 2. Массив [ building, ... ]
+    var buildings = Array.isArray(data) ? data : Object.values(data);
+    var found = [];
 
-      if (response.error) {
-        console.warn('FoE Overlay:', response.error);
-        updateStatus('Ошибка: ' + response.error);
-        return;
-      }
+    buildings.forEach(function(b) {
+      if (!b || !b.name) return;
+      var name = b.name.toLowerCase();
+      if (!TARGET_NAMES.has(name)) return;
 
-      var buildings = response.buildings || [];
-      var found = [];
+      // Проверяем productions на resource === "money"
+      var prods = b.productions;
+      if (!Array.isArray(prods) || prods.length === 0) return;
 
-      buildings.forEach(function(b) {
-        var name = b.name.toLowerCase();
-        if (!TARGET_NAMES.has(name)) return;
-
-        // Проверяем productions на resource === "money"
-        var prods = b.productions;
-        if (!Array.isArray(prods) || prods.length === 0) return;
-
-        var hasMoney = prods.some(function(p) {
-          return p.type === 'resources' && p.resource === 'money';
-        });
-        if (!hasMoney) return;
-
-        found.push({
-          x: b.x,
-          y: b.y,
-          w: b.width,
-          h: b.height,
-          name: b.name
-        });
+      var hasMoney = prods.some(function(p) {
+        return p.type === 'resources' && p.resource === 'money';
       });
+      if (!hasMoney) return;
 
-      highlightedBuildings = found;
-      draw();
-      updateStatus('Найдено зданий: ' + found.length);
+      found.push({
+        x: b.x != null ? b.x : 0,
+        y: b.y != null ? b.y : 0,
+        w: b.width || 1,
+        h: b.height || 1,
+        name: b.name
+      });
     });
+
+    highlightedBuildings = found;
+    draw();
+    updateStatus('Найдено зданий: ' + found.length);
   }
 
   // ── DOM ──────────────────────────────────────────────────
@@ -119,7 +139,7 @@
     </div>
     <div id="foe-overlay-body">
 
-      <button id="foe-ov-extract">🔍 Извлечь данные</button>
+      <button id="foe-ov-extract">📂 Загрузить JSON</button>
       <div id="foe-ov-status" class="foe-ov-status-text"></div>
 
       <div class="foe-ov-divider"></div>
