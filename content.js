@@ -87,6 +87,16 @@
     // 1. Объект { "2447": building, ... } (CityMapData из FoE Helper)
     // 2. Массив [ building, ... ]
     var buildings = Array.isArray(data) ? data : Object.values(data);
+
+    console.log('[FoE Overlay] Загружено объектов:', buildings.length);
+    console.log('[FoE Overlay] Тип данных:', Array.isArray(data) ? 'массив' : 'объект');
+
+    // Отладка: показываем первый объект для понимания структуры
+    if (buildings.length > 0) {
+      console.log('[FoE Overlay] Пример объекта:', JSON.stringify(buildings[0]).substring(0, 500));
+    }
+
+    var targetFound = [];
     var found = [];
 
     buildings.forEach(function(b) {
@@ -94,30 +104,46 @@
       var name = b.name.toLowerCase();
       if (!TARGET_NAMES.has(name)) return;
 
-      // Проверяем производство на money в двух форматах:
-      //
-      // Формат CityMapData (FoE Helper):
-      //   state.production: [{ type: "resources", resources: { money: 21100 } }]
-      //
-      // Упрощённый формат:
-      //   productions: [{ type: "resources", resource: "money", amount: 21100 }]
+      // Это целевое здание — логируем всю инфу о производстве
+      targetFound.push(b.name);
+      console.log('[FoE Overlay] Целевое здание:', b.name, 'id:', b.id);
+      console.log('[FoE Overlay]   state:', JSON.stringify(b.state));
+      console.log('[FoE Overlay]   productions:', JSON.stringify(b.productions));
+      console.log('[FoE Overlay]   production:', JSON.stringify(b.production));
+      console.log('[FoE Overlay]   coords:', JSON.stringify(b.coords));
+      console.log('[FoE Overlay]   size:', JSON.stringify(b.size));
 
+      // Проверяем производство на money в нескольких форматах
       var hasMoney = false;
 
-      // Формат 1: state.production
+      // Формат 1: state.production [{type:"resources", resources:{money:N}}]
       var stateProd = b.state && b.state.production;
       if (Array.isArray(stateProd)) {
         hasMoney = stateProd.some(function(p) {
           return p.type === 'resources' && p.resources && p.resources.money > 0;
         });
+        console.log('[FoE Overlay]   state.production check:', hasMoney);
       }
 
-      // Формат 2: productions
+      // Формат 2: productions [{type:"resources", resource:"money"}]
       if (!hasMoney && Array.isArray(b.productions)) {
         hasMoney = b.productions.some(function(p) {
           return p.type === 'resources' && p.resource === 'money';
         });
+        console.log('[FoE Overlay]   productions check:', hasMoney);
       }
+
+      // Формат 3: production (не массив state.production, а поле верхнего уровня)
+      if (!hasMoney && Array.isArray(b.production)) {
+        hasMoney = b.production.some(function(p) {
+          if (p.type === 'resources' && p.resources && p.resources.money > 0) return true;
+          if (p.type === 'resources' && p.resource === 'money') return true;
+          return false;
+        });
+        console.log('[FoE Overlay]   production (top-level) check:', hasMoney);
+      }
+
+      console.log('[FoE Overlay]   hasMoney итого:', hasMoney);
 
       if (!hasMoney) return;
 
@@ -132,9 +158,12 @@
       found.push({ x: bx, y: by, w: bw, h: bh, name: b.name });
     });
 
+    console.log('[FoE Overlay] Целевых зданий найдено по имени:', targetFound.length, targetFound);
+    console.log('[FoE Overlay] Из них с money:', found.length);
+
     highlightedBuildings = found;
     draw();
-    updateStatus('Найдено зданий: ' + found.length);
+    updateStatus('Найдено зданий: ' + found.length + ' (целевых: ' + targetFound.length + ')');
   }
 
   // ── DOM ──────────────────────────────────────────────────
