@@ -7,6 +7,9 @@
 (function () {
   'use strict';
 
+  // Защита от повторной инжекции (service worker может перезапуститься)
+  if (document.getElementById('foe-overlay-canvas')) return;
+
   // ── ДЕФОЛТНЫЕ НАСТРОЙКИ ──────────────────────────────────
   const DEFAULTS = {
     isoA:       20,   // сдвиг вдоль оси колонок (вправо-вниз)
