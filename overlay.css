@@ -1,0 +1,261 @@
+/* FoE Overlay — панель управления */
+
+#foe-overlay-panel {
+  position: fixed;
+  z-index: 999999;
+  top: 80px;
+  right: 16px;
+  width: 220px;
+  background: rgba(10, 13, 20, 0.92);
+  border: 1px solid rgba(232, 160, 32, 0.4);
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(232,160,32,0.1);
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 12px;
+  color: #cdd6f4;
+  user-select: none;
+  backdrop-filter: blur(6px);
+}
+
+#foe-overlay-panel.hidden { display: none; }
+
+#foe-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(232,160,32,0.2);
+  cursor: grab;
+  background: rgba(232,160,32,0.08);
+  border-radius: 8px 8px 0 0;
+}
+#foe-overlay-header:active { cursor: grabbing; }
+
+#foe-overlay-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #e8a020;
+}
+
+#foe-overlay-toggle-vis {
+  background: none;
+  border: 1px solid rgba(232,160,32,0.4);
+  border-radius: 4px;
+  color: #e8a020;
+  font-size: 11px;
+  padding: 1px 6px;
+  cursor: pointer;
+  transition: background .15s;
+  font-family: inherit;
+}
+#foe-overlay-toggle-vis:hover { background: rgba(232,160,32,0.2); }
+#foe-overlay-toggle-vis.off { color: #6c7a99; border-color: rgba(108,122,153,0.4); }
+
+#foe-overlay-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.foe-ov-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foe-ov-label {
+  width: 58px;
+  flex-shrink: 0;
+  color: #6c7a99;
+  font-size: 11px;
+}
+
+.foe-ov-val {
+  width: 32px;
+  text-align: right;
+  color: #e8a020;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.foe-ov-row input[type=range] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 3px;
+  background: rgba(232,160,32,0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.foe-ov-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #e8a020;
+  border: 2px solid #0b0e14;
+  cursor: pointer;
+  transition: transform .1s;
+}
+.foe-ov-row input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+.foe-ov-divider {
+  height: 1px;
+  background: rgba(232,160,32,0.12);
+  margin: 2px 0;
+}
+
+.foe-ov-hint {
+  font-size: 10px;
+  color: rgba(108,122,153,0.7);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+#foe-ov-reset {
+  width: 100%;
+  padding: 5px;
+  background: rgba(232,160,32,0.1);
+  border: 1px solid rgba(232,160,32,0.3);
+  border-radius: 5px;
+  color: #e8a020;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .15s;
+}
+#foe-ov-reset:hover { background: rgba(232,160,32,0.2); }
+
+/* Кнопка «Извлечь данные» */
+#foe-ov-extract {
+  width: 100%;
+  padding: 7px 5px;
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.5);
+  border-radius: 5px;
+  color: #81c784;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+#foe-ov-extract:hover {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.8);
+}
+#foe-ov-extract:active {
+  background: rgba(76, 175, 80, 0.4);
+}
+
+/* Кнопка «Автонастройка» */
+#foe-ov-autofit {
+  width: 100%;
+  padding: 5px;
+  background: rgba(166, 227, 161, 0.1);
+  border: 1px solid rgba(166, 227, 161, 0.4);
+  border-radius: 5px;
+  color: #a6e3a1;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: background .15s;
+}
+#foe-ov-autofit:hover {
+  background: rgba(166, 227, 161, 0.2);
+}
+
+/* Кнопка «Загрузить JSON» (запасной вариант) */
+#foe-ov-load-json {
+  width: 100%;
+  padding: 5px;
+  background: rgba(108, 122, 153, 0.1);
+  border: 1px solid rgba(108, 122, 153, 0.3);
+  border-radius: 5px;
+  color: #6c7a99;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: background .15s;
+}
+#foe-ov-load-json:hover {
+  background: rgba(108, 122, 153, 0.2);
+  color: #8892aa;
+}
+
+/* Статус извлечения */
+.foe-ov-status-text {
+  font-size: 10px;
+  color: #81c784;
+  line-height: 1.4;
+  min-height: 14px;
+  text-align: center;
+}
+
+/* Секция чекбоксов производств */
+.foe-ov-section-label {
+  font-size: 10px;
+  color: #6c7a99;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.foe-ov-cb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--cb-color, #c0c8e0);
+}
+.foe-ov-cb-row input[type="checkbox"] {
+  accent-color: var(--cb-color, #e8a020);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  margin: 0;
+}
+.foe-ov-cb-row span {
+  user-select: none;
+}
+
+/* Toggle кнопка когда панель скрыта — стиль иконок FoE */
+#foe-overlay-open-btn {
+  position: fixed;
+  z-index: 999999;
+  top: 80px;
+  right: 3px;
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(180deg, rgba(60,50,30,0.92) 0%, rgba(35,28,15,0.95) 100%);
+  border: 2px solid rgba(160,130,60,0.7);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 24px;
+  line-height: 46px;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: border-color .15s, transform .1s;
+}
+#foe-overlay-open-btn:hover {
+  border-color: rgba(232,180,60,0.9);
+  transform: scale(1.05);
+}
+#foe-overlay-open-btn:active {
+  transform: scale(0.95);
+}
+
+/* Canvas */
+#foe-overlay-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 999998;
+}
