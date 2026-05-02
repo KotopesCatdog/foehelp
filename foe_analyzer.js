@@ -188,8 +188,8 @@ function extractAllProductions(b) {
                 else if (k === "medals") medals += v;
                 else if (k === "premium") premium += v;
                 else if (k.includes("good") && k.includes("previous")) prev += v;
-                else if (k.includes("good") && (k.includes("all") || k.includes("age"))) age += v;
                 else if (k.includes("good") && k.includes("next")) next += v;
+                else if (k.includes("good") && (k.includes("all") || k.includes("age"))) age += v;
             }
         }
 
@@ -351,7 +351,7 @@ function perTile(b, value) {
 
 function nz(v) { return v ? (Number.isInteger(v) ? v : +v.toFixed(2)) : ''; }
 function fmtSize(b) { return b.size ? (b.size.width + "×" + b.size.length) : ""; }
-function isInv(b) { return (b.id === 0) ? "✔" : ""; }
+function isInv(b) { return (b.isInInventory || b.id === 0) ? "✔" : ""; }
 function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
 
 
