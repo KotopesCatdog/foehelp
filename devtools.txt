@@ -172,6 +172,9 @@
                     });
                     
                     // Боевые бонусы
+                    if (!fullData.battleBoosts.summary.byFeature[boostFeature]) {
+                        fullData.battleBoosts.summary.byFeature[boostFeature] = { attackerAttack: 0, attackerDefense: 0, defenderAttack: 0, defenderDefense: 0 };
+                    }
                     if (bt === 'att_boost_attacker') {
                         buildingDetail.battleStats.attackerAttack += boostValue;
                         fullData.battleBoosts.summary.attacker.attack += boostValue;

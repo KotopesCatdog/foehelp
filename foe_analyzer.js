@@ -806,7 +806,8 @@ function applyInventoryFilter() {
 
 function syncRowVisibility(tr) {
     const invHidden = tr.dataset.invHidden === "1";
-    const favHidden = showFav && !favorites.includes(tr.querySelector(".fav")?.dataset.id);
+    const favId = tr.querySelector(".fav")?.dataset.id;
+    const favHidden = showFav && !favorites.some(f => String(f) === favId);
     const searchVal = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const searchHide = searchVal && !tr.dataset.name?.includes(searchVal);
 
