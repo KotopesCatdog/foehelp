@@ -7,7 +7,9 @@ let inventoryMode = 0;   // 0=все, 1=только инвентарь, 2=бе�
 let lastList = [];
 let lastGrouped = [];
 
-let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let favorites;
+try { favorites = JSON.parse(localStorage.getItem("favorites") || "[]"); }
+catch(e) { favorites = []; localStorage.removeItem("favorites"); }
 
 
 // =========================================================
@@ -220,8 +222,8 @@ function extractAllProductions(b) {
             if (r.type === "strategy_points") fp += r.amount || 0;
             else if (r.type === "goods" || r.type === "good") {
                 if (r.subType && r.subType.includes("previous")) prev += r.amount || 0;
-                else if (r.subType && (r.subType.includes("age") || r.subType.includes("all"))) age += r.amount || 0;
                 else if (r.subType && r.subType.includes("next")) next += r.amount || 0;
+                else if (r.subType && (r.subType.includes("age") || r.subType.includes("all"))) age += r.amount || 0;
             }
             else if (r.type === "consumable" || r.subType === "fragment") {
                 items.push({
@@ -244,12 +246,12 @@ function extractAllProductions(b) {
                 if (r.subType === "random_good_of_previous_age" || (r.type === "good" && r.subType?.includes("previous"))) {
                     goodsRandom += daily;
                     prev += daily;
-                } else if (r.subType === "random_good_of_age" || (r.type === "good" && r.subType?.includes("age"))) {
-                    goodsRandom += daily;
-                    age += daily;
                 } else if (r.subType === "random_good_of_next_age" || (r.type === "good" && r.subType?.includes("next"))) {
                     goodsRandom += daily;
                     next += daily;
+                } else if (r.subType === "random_good_of_age" || (r.type === "good" && r.subType?.includes("age"))) {
+                    goodsRandom += daily;
+                    age += daily;
                 } else if (r.type === "resources" && r.subType === "strategy_points") {
                     fpRandom += daily;
                     fp += daily;

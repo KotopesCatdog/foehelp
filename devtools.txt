@@ -244,7 +244,7 @@
                         
                         // Суммирование ресурсов
                         let finalAmount = amount;
-                        if (building.isBoostable && building.isPolivated && prod.doubleWhenMotivated) {
+                        if (building.isBoostable && building.state?.isPolivated && prod.doubleWhenMotivated) {
                             finalAmount = amount * 2;
                         }
                         
