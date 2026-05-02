@@ -352,6 +352,7 @@ function perTile(b, value) {
 function nz(v) { return v ? (Number.isInteger(v) ? v : +v.toFixed(2)) : ''; }
 function fmtSize(b) { return b.size ? (b.size.width + "×" + b.size.length) : ""; }
 function isInv(b) { return (b.id === 0) ? "✔" : ""; }
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
 
 
 // =========================================================
@@ -366,12 +367,12 @@ function createBaseRow(b, extraCells) {
     if (isFav) tr.classList.add("favorite-row");
 
     tr.innerHTML = `
-        <td class="fav ${isFav ? "active" : ""}" data-id="${b.entityId}">${fav}</td>
+        <td class="fav ${isFav ? "active" : ""}" data-id="${esc(b.entityId)}">${fav}</td>
         <td>${isInv(b)}</td>
-        <td>${b.name}</td>
+        <td>${esc(b.name)}</td>
         <td>${b.count}</td>
         <td>${fmtSize(b)}</td>
-        <td>${b.eraName || ''}</td>
+        <td>${esc(b.eraName || '')}</td>
         ${extraCells}
     `;
 
@@ -634,13 +635,13 @@ function fillItemsTable(list) {
             if (isFav) tr.classList.add("favorite-row");
 
             tr.innerHTML = `
-                <td class="fav ${isFav ? "active" : ""}" data-id="${b.entityId}">${fav}</td>
+                <td class="fav ${isFav ? "active" : ""}" data-id="${esc(b.entityId)}">${fav}</td>
                 <td>${isInv(b)}</td>
-                <td>${b.name}</td>
+                <td>${esc(b.name)}</td>
                 <td>${b.count}</td>
                 <td>${fmtSize(b)}</td>
-                <td>${b.eraName || ''}</td>
-                <td>${item.name}</td>
+                <td>${esc(b.eraName || '')}</td>
+                <td>${esc(item.name)}</td>
                 <td>${item.amount}</td>
                 <td>${item.dropChance < 1 ? nz(item.daily) + ' (' + Math.round(item.dropChance * 100) + '%)' : item.amount}</td>
             `;
