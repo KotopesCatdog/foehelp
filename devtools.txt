@@ -466,12 +466,13 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `foe_complete_data_${Date.now()}.json`;
+    const fileName = `foe_complete_data_${Date.now()}.json`;
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
     
     console.log('\n%c✅ ГОТОВО!', 'color: #00ff00; font-size: 14px; font-weight: bold;');
-    console.log(`📁 Файл скачан: foe_complete_data_${Date.now()}.json`);
+    console.log(`📁 Файл скачан: ${fileName}`);
     console.log(`📦 Размер: ${(jsonStr.length / 1024).toFixed(2)} KB`);
     console.log('\n💡 Данные доступны в window.FoEAllData');
     console.log('💡 Для просмотра введите: console.log(window.FoEAllData)');

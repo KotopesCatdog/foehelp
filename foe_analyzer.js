@@ -84,7 +84,7 @@ function toggleFavorite(entityId) {
 }
 
 function updateFavoriteVisual(entityId) {
-    document.querySelectorAll(`.fav[data-id="${entityId}"]`).forEach(cell => {
+    document.querySelectorAll(`.fav[data-id="${CSS.escape(String(entityId))}"]`).forEach(cell => {
         const isFav = favorites.includes(entityId);
         cell.textContent = isFav ? "★" : "☆";
         cell.classList.toggle("active", isFav);
@@ -368,7 +368,7 @@ function perTile(b, value) {
 function nz(v) { v = Number(v) || 0; return v ? (Number.isInteger(v) ? v : +v.toFixed(2)) : ''; }
 function fmtSize(b) { return b.size ? (b.size.width + "×" + b.size.length) : ""; }
 function isInv(b) { return (b.isInInventory || b.id === 0) ? "✔" : ""; }
-function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML.replace(/"/g, '&quot;'); }
 
 
 // =========================================================
