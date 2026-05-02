@@ -42,16 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- поиск по предмету (вкладка Предметы) ---
-    itemSearchInput.addEventListener("input", function() {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
-            const itemCell = tr.querySelector("td.item-name");
-            if (!itemCell) return;
-            const match = !q || itemCell.textContent.toLowerCase().includes(q);
-            tr.dataset.itemMatch = match ? "1" : "0";
-            syncRowVisibility(tr);
-        });
-    });
+    itemSearchInput.addEventListener("input", () => reapplyItemFilter());
 
     // --- переключатель "на клетку" ---
     document.getElementById("togglePerTile").addEventListener("click", function() {
@@ -140,6 +131,7 @@ function rebuildAllTables() {
     // включаем сортировку на всех таблицах
     document.querySelectorAll('table').forEach(t => enableSorting(t.id));
     applyInventoryFilter();
+    reapplyItemFilter();
 }
 
 
@@ -779,6 +771,18 @@ function sortTable(table, col) {
 // =========================================================
 // ================== INVENTORY FILTER =====================
 // =========================================================
+
+function reapplyItemFilter() {
+    const input = document.getElementById("itemSearchInput");
+    const q = (input && input.value || "").toLowerCase();
+    document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
+        const itemCell = tr.querySelector("td.item-name");
+        if (!itemCell) return;
+        const match = !q || itemCell.textContent.toLowerCase().includes(q);
+        tr.dataset.itemMatch = match ? "1" : "0";
+        syncRowVisibility(tr);
+    });
+}
 
 function applyInventoryFilter() {
     document.querySelectorAll("tbody tr").forEach(tr => {
