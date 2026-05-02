@@ -181,7 +181,7 @@ function extractAllProductions(b) {
     let gr_actions = 0, gr_coins_pct = 0, gr_supplies_pct = 0;
     let gr_coins_start = 0, gr_supplies_start = 0, gr_goods_start = 0, gr_units_start = 0;
 
-    const productions = b.production || [];
+    const productions = [...(b.production || []), ...(b.state?.production || [])];
 
     for (const p of productions) {
         if (!p) continue;
