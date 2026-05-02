@@ -198,22 +198,22 @@
                     
                     // Производственные бонусы
                     if (bt === 'forge_points_production') {
-                        buildingDetail.productionBonuses.fp = boostValue;
+                        buildingDetail.productionBonuses.fp += boostValue;
                         fullData.productionBoosts.forge_points_production.total += boostValue;
                         fullData.productionBoosts.forge_points_production.buildings.push({ name: building.name, value: boostValue });
                     }
                     if (bt === 'coin_production') {
-                        buildingDetail.productionBonuses.coins = boostValue;
+                        buildingDetail.productionBonuses.coins += boostValue;
                         fullData.productionBoosts.coin_production.total += boostValue;
                         fullData.productionBoosts.coin_production.buildings.push({ name: building.name, value: boostValue });
                     }
                     if (bt === 'supply_production') {
-                        buildingDetail.productionBonuses.supplies = boostValue;
+                        buildingDetail.productionBonuses.supplies += boostValue;
                         fullData.productionBoosts.supply_production.total += boostValue;
                         fullData.productionBoosts.supply_production.buildings.push({ name: building.name, value: boostValue });
                     }
                     if (bt === 'goods_production') {
-                        buildingDetail.productionBonuses.goods = boostValue;
+                        buildingDetail.productionBonuses.goods += boostValue;
                         fullData.productionBoosts.goods_production.total += boostValue;
                         fullData.productionBoosts.goods_production.buildings.push({ name: building.name, value: boostValue });
                     }
