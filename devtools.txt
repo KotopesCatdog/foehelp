@@ -250,19 +250,19 @@
                         
                         if (resType === 'strategy_points') {
                             fullData.resources.strategy_points.total += finalAmount;
-                            if (building.isPolivated) fullData.resources.strategy_points.motivated += finalAmount;
+                            if (building.state?.isPolivated) fullData.resources.strategy_points.motivated += finalAmount;
                             else fullData.resources.strategy_points.unmotivated += amount;
-                            fullData.resources.strategy_points.buildings.push({ name: building.name, amount: finalAmount, motivated: building.isPolivated });
+                            fullData.resources.strategy_points.buildings.push({ name: building.name, amount: finalAmount, motivated: building.state?.isPolivated });
                         }
                         if (resType === 'money') {
                             fullData.resources.money.total += finalAmount;
-                            if (building.isPolivated) fullData.resources.money.motivated += finalAmount;
+                            if (building.state?.isPolivated) fullData.resources.money.motivated += finalAmount;
                             else fullData.resources.money.unmotivated += amount;
                             fullData.resources.money.buildings.push({ name: building.name, amount: finalAmount });
                         }
                         if (resType === 'supplies') {
                             fullData.resources.supplies.total += finalAmount;
-                            if (building.isPolivated) fullData.resources.supplies.motivated += finalAmount;
+                            if (building.state?.isPolivated) fullData.resources.supplies.motivated += finalAmount;
                             else fullData.resources.supplies.unmotivated += amount;
                             fullData.resources.supplies.buildings.push({ name: building.name, amount: finalAmount });
                         }

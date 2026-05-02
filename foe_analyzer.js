@@ -108,7 +108,6 @@ function loadBuildings(list) {
 }
 
 function rebuildAllTables() {
-    fillAllBuildings(lastGrouped);
     fillFPTable(lastGrouped);
     fillGoodsTable(lastGrouped);
     fillClanGoodsTable(lastGrouped);
@@ -392,31 +391,6 @@ function createBaseRow(b, extraCells) {
 // =========================================================
 // ===================== TABLE: ALL =========================
 // =========================================================
-
-function fillAllBuildings(list) {
-    const tb = document.querySelector('#buildingsTable tbody');
-    tb.innerHTML = "";
-    const frag = document.createDocumentFragment();
-
-    list.forEach(b => {
-        const prod = extractAllProductions(b);
-        const tr = createBaseRow(b, `
-            <td>${nz(perTile(b, b.population || 0))}</td>
-            <td>${nz(perTile(b, prod.fp))}</td>
-            <td>${nz(perTile(b, prod.prev))}</td>
-            <td>${nz(perTile(b, prod.age))}</td>
-            <td>${nz(perTile(b, prod.next))}</td>
-            <td>${nz(perTile(b, prod.clanGoods))}</td>
-            <td>${nz(perTile(b, prod.specialGoods))}</td>
-            <td>${nz(perTile(b, prod.money))}</td>
-            <td>${nz(perTile(b, prod.supplies))}</td>
-            <td>${nz(perTile(b, prod.medals))}</td>
-            <td>${nz(perTile(b, prod.units))}</td>
-        `);
-        frag.appendChild(tr);
-    });
-    tb.appendChild(frag);
-}
 
 
 // =========================================================
