@@ -25,18 +25,32 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput.onchange = () => loadFile(fileInput.files[0]);
 
     // --- вкладки ---
+    const itemSearchInput = document.getElementById("itemSearchInput");
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            itemSearchInput.style.display = btn.dataset.tab === "items" ? "" : "none";
         };
     });
 
     // --- поиск по имени ---
     document.getElementById("searchInput")?.addEventListener("input", function() {
         document.querySelectorAll("tbody tr").forEach(tr => syncRowVisibility(tr));
+    });
+
+    // --- поиск по предмету (вкладка Предметы) ---
+    itemSearchInput.addEventListener("input", function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
+            const itemCell = tr.querySelector("td.item-name");
+            if (!itemCell) return;
+            const match = !q || itemCell.textContent.toLowerCase().includes(q);
+            tr.dataset.itemMatch = match ? "1" : "0";
+            syncRowVisibility(tr);
+        });
     });
 
     // --- переключатель "на клетку" ---
@@ -618,7 +632,7 @@ function fillItemsTable(list) {
                 <td>${b.count}</td>
                 <td>${fmtSize(b)}</td>
                 <td>${esc(b.eraName || '')}</td>
-                <td>${esc(item.name)}</td>
+                <td class="item-name">${esc(item.name)}</td>
                 <td>${item.amount}</td>
                 <td>${item.dropChance < 1 ? nz(item.daily) + ' (' + Math.round(item.dropChance * 100) + '%)' : item.amount}</td>
             `;
@@ -788,8 +802,9 @@ function syncRowVisibility(tr) {
     const favHidden = showFav && !favorites.some(f => String(f) === favId);
     const searchVal = document.getElementById("searchInput")?.value.toLowerCase() || "";
     const searchHide = searchVal && !tr.dataset.name?.includes(searchVal);
+    const itemHide = tr.dataset.itemMatch === "0";
 
-    tr.style.display = (invHidden || favHidden || searchHide) ? "none" : "";
+    tr.style.display = (invHidden || favHidden || searchHide || itemHide) ? "none" : "";
 }
 
 

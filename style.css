@@ -214,6 +214,22 @@ th{
     background: #16213e;
     color: #eee;
 }
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.item-search-box {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #0f3460;
+    background: #16213e;
+    color: #eee;
+    width: 250px;
+}
 
 /* -------- Избранное -------- */
 
