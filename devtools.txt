@@ -108,9 +108,9 @@
     };
     
     // Обработка каждого здания
-    console.log(`📊 Обработка ${Productions.BuildingsAll.length} зданий...`);
+    console.log(`📊 Обработка ${fullData.buildings.length} зданий...`);
     
-    for (const building of Productions.BuildingsAll) {
+    for (const building of fullData.buildings) {
         if (!building) continue;
         
         // Размер здания
