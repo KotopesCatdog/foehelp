@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FoE Рейтинг зданий</title>
+<link rel="icon" href="https://foehelp.ru/favicon.png" type="image/png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<h1>Forge of Empires – Рейтинг зданий</h1>
+<div class="subtitle">Идея — papachina</div>
+
+<div class="ext-header-row">
+    <div id="uploadArea" class="upload-area">📁 Загрузка JSON</div>
+    <button id="downloadExtBtn">📦 Скачать расширение<br>для Хрома (пароль: 1)</button>
+    <br> Полные данные будут только после бафа всех зданий.
+</div>
+<input type="file" id="fileInput" accept=".json" hidden>
+<input id="searchInput" class="search-box" placeholder="🔍 Поиск по названию..." />
+<button id="togglePerTile" class="switchButton">На клетку: выкл</button>
+<button id="toggleInventory" class="switchButton">Инвентарь: все</button>
+
+<div class="tabs">
+<button class="tab-btn active" data-tab="all">Все здания</button>
+<button class="tab-btn" data-tab="fp">СО</button>
+<button class="tab-btn" data-tab="goods">Товары</button>
+<button class="tab-btn" data-tab="clan_goods">Клан.товары</button>
+<button class="tab-btn" data-tab="special_goods">Спец.товары</button>
+<button class="tab-btn" data-tab="money">Монеты</button>
+<button class="tab-btn" data-tab="supplies">Припасы</button>
+<button class="tab-btn" data-tab="medals">Медали</button>
+<button class="tab-btn" data-tab="premium">Бриллианты</button>
+<button class="tab-btn" data-tab="units">Юниты</button>
+<button class="tab-btn" data-tab="items">Предметы</button>
+<button class="tab-btn" data-tab="population">Население</button>
+<button class="tab-btn" data-tab="happiness">Счастье</button>
+<button class="tab-btn" data-tab="boosts">Бусты</button>
+<button class="tab-btn" data-tab="guild_raids">Рейды</button>
+<button id="favToggle" class="fav-btn">★ Только избранные</button>
+</div>
+
+<!-- Все здания -->
+<div id="tab-all" class="tab-content active">
+<div class="scrollable">
+<table id="buildingsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Население</th>
+<th>СО</th>
+<th>Тов пр</th>
+<th>Тов</th>
+<th>Тов сл</th>
+<th>Клан</th>
+<th>Спец</th>
+<th>Монеты</th>
+<th>Припасы</th>
+<th>Медали</th>
+<th>Юниты</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- СО (Forge Points) -->
+<div id="tab-fp" class="tab-content">
+<div class="scrollable">
+<table id="fpTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>СО</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Товары -->
+<div id="tab-goods" class="tab-content">
+<div class="scrollable">
+<table id="goodsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Тов пр</th>
+<th>Тов</th>
+<th>Тов сл</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Клановые товары -->
+<div id="tab-clan_goods" class="tab-content">
+<div class="scrollable">
+<table id="clanGoodsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Клан.товары</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Спец.товары -->
+<div id="tab-special_goods" class="tab-content">
+<div class="scrollable">
+<table id="specialGoodsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Спец.товары</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Монеты -->
+<div id="tab-money" class="tab-content">
+<div class="scrollable">
+<table id="moneyTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Монеты</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Припасы -->
+<div id="tab-supplies" class="tab-content">
+<div class="scrollable">
+<table id="suppliesTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Припасы</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Медали -->
+<div id="tab-medals" class="tab-content">
+<div class="scrollable">
+<table id="medalsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Медали</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Бриллианты -->
+<div id="tab-premium" class="tab-content">
+<div class="scrollable">
+<table id="premiumTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Бриллианты</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Юниты -->
+<div id="tab-units" class="tab-content">
+<div class="scrollable">
+<table id="unitsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Юниты</th>
+<th>Из случ.</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Предметы -->
+<div id="tab-items" class="tab-content">
+<div class="scrollable">
+<table id="itemsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Предмет</th>
+<th>Кол-во</th>
+<th>Шанс/день</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Население -->
+<div id="tab-population" class="tab-content">
+<div class="scrollable">
+<table id="populationTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Население</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Счастье -->
+<div id="tab-happiness" class="tab-content">
+<div class="scrollable">
+<table id="happinessTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Счастье</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Бусты -->
+<div id="tab-boosts" class="tab-content">
+<div class="scrollable">
+<table id="boostsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>СО %</th>
+<th>Монет %</th>
+<th>Припас %</th>
+<th>Товар %</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- Guild Raids -->
+<div id="tab-guild_raids" class="tab-content">
+<div class="scrollable">
+<table id="guildRaidsTable">
+<thead>
+<tr>
+<th>★</th>
+<th>И</th>
+<th>Имя</th>
+<th>К-во</th>
+<th>Размер</th>
+<th>Эпоха</th>
+<th>Очки</th>
+<th>Монеты %</th>
+<th>Припасы %</th>
+<th>Монеты нач</th>
+<th>Припасы нач</th>
+<th>Товары нач</th>
+<th>Юниты нач</th>
+</tr>
+</thead><tbody></tbody>
+</table>
+</div>
+</div>
+
+</div>
+<script src="foe_analyzer.js"></script>
+<script>
+    const extBtn = document.getElementById('downloadExtBtn');
+    if(extBtn) {
+        extBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://drive.google.com/file/d/1nkJHNTCg6gfDQyyIVTlzIBO84P7NPINi/view?usp=sharing', '_blank');
+        });
+    }
+</script>
+</body>
+</html>

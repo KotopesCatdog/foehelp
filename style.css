@@ -1,0 +1,265 @@
+/* ====== ОСНОВА ====== */
+
+body { 
+    background:#1a1a2e; 
+    color:#eee; 
+    font-family:'Segoe UI'; 
+    padding:20px; 
+}
+.container{
+    max-width:1800px;
+    margin:auto;
+}
+h1{
+    text-align:center;
+    color:#ffd700;
+}
+
+/* Подзаголовок */
+.subtitle {
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #73b4ff;
+    text-align: center;
+    font-weight: 400;
+}
+
+/* ===== БЛОК: ряд с загрузкой и кнопкой ===== */
+.ext-header-row {
+    display: flex;
+    gap: 18px;
+    align-items: stretch;
+    margin-bottom: 24px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+/* Окно загрузки */
+.upload-area {
+    flex: 0 0 auto;
+    width: 220px;
+    min-height: 40px;
+    border-radius: 24px;
+    padding: 12px 10px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    word-break: break-word;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+
+    background: #0a2f4d;
+    border: 1px solid #2c6a9e;
+    color: #f0f9ff;
+}
+
+.upload-area:hover {
+    background: #124263;
+    transform: scale(0.98);
+}
+
+/* Кнопка "Скачать расширение" */
+#downloadExtBtn {
+    flex: 0 0 220px;
+    min-height: 30px;
+    border-radius: 24px;
+    padding: 12px 10px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+
+    background: #1e5427;
+    border: none;
+    color: white;
+}
+
+#downloadExtBtn:hover {
+    background: #2a6e35;
+    transform: scale(0.98);
+}
+
+/* -------- ТАБЫ + кнопка "Избранное" + кнопки-переключатели -------- */
+
+.tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.tabs button,
+#favToggle {
+    flex: 0 1 auto;
+    min-width: 90px;
+    height: 38px;
+    line-height: 20px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #1a2b44;
+    color: #fff;
+    border: 1px solid #314a72;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+/* кнопки-переключатели — общий стиль */
+.switchButton {
+    flex: 0 0 180px;
+    width: 180px;
+    height: 42px;
+    line-height: 20px;
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: 500;
+    background: #1a2b44;
+    color: #fff;
+    border: 1px solid #314a72;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tabs button:hover,
+#favToggle:hover,
+.switchButton:hover {
+    background: #22385c;
+    border-color: #3a5c99;
+}
+
+/* активная вкладка */
+.tabs button.active {
+    background: #305084;
+    border-color: #4b78c7;
+}
+
+/* активная кнопка избранного */
+#favToggle.active {
+    color: #ffd700;
+    font-weight: 600;
+}
+
+/* активная кнопка-переключатель */
+.switchButton.active {
+    background: #305084;
+    border-color: #4b78c7;
+    color: #ffd700;
+    font-weight: 600;
+}
+
+
+/* -------- ТАБ-КОНТЕНТ -------- */
+
+.tab-content{
+    display:none;
+}
+.tab-content.active{
+    display:block;
+}
+
+
+/* -------- ТАБЛИЦЫ -------- */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#16213e;
+}
+
+th,td{
+    padding:8px 10px;
+    border-bottom:1px solid #0f3460;
+}
+
+th{
+    background:#0f3460;
+    color:#ffd700;
+    cursor:pointer;
+    position:sticky;
+    top:0;
+    z-index: 2;
+}
+
+.scrollable{
+    max-height:70vh;
+    overflow:auto;
+}
+
+.search-box {
+    width: 50%;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #0f3460;
+    background: #16213e;
+    color: #eee;
+}
+
+/* -------- Избранное -------- */
+
+.fav-btn {
+    background: #0f3460;
+    border: 1px solid #1a4a80;
+    color: #ffd700;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.fav {
+    cursor: pointer;
+    font-size: 18px;
+    color: #888;
+    width: 32px;
+    text-align: center;
+}
+.fav:hover {
+    color: #ffd700;
+}
+.favorite-row {
+    background: rgba(255,215,0,0.08);
+}
+.fav.active {
+    color: #ffd700;
+}
+
+/* -------- Вертикальные разделители -------- */
+
+table th,
+table td {
+    border-right: 1px solid #3a3a3a;
+    padding: 4px 6px;
+}
+table th:last-child,
+table td:last-child {
+    border-right: none;
+}
+
+table th {
+    text-align: center;
+    white-space: nowrap;
+}
+table td {
+    white-space: nowrap;
+}

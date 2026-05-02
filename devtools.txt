@@ -1,0 +1,477 @@
+// ========== ПОЛНЫЙ ЭКСПОРТ ВСЕХ ДАННЫХ ИЗ PRODUCTIONS ==========
+// Скопируйте и вставьте в консоль игры
+
+(function fullExportFromProductions() {
+    console.log('%c=== ПОЛНЫЙ ЭКСПОРТ ДАННЫХ FOE ===', 'color: #ffd700; font-size: 16px;');
+    
+    // Проверяем наличие данных
+    if (typeof Productions === 'undefined') {
+        console.error('❌ Productions не найден! Убедитесь, что расширение FoE-Helper установлено и активно.');
+        return;
+    }
+    
+    // Собираем ВСЕ возможные данные
+    const fullData = {
+        exportTime: new Date().toISOString(),
+        gameInfo: {
+            era: typeof CurrentEra !== 'undefined' ? CurrentEra : null,
+            playerId: typeof ExtPlayerID !== 'undefined' ? ExtPlayerID : null,
+            url: window.location.href
+        },
+        
+        // Основные данные из Productions
+        buildings: Productions.BuildingsAll || [],
+        buildingsProducts: Productions.BuildingsProducts || {},
+        buildingsProductsGroups: Productions.BuildingsProductsGroups || {},
+        combinedCityMapData: Productions.CombinedCityMapData || {},
+        
+        // Типы ресурсов
+        types: Productions.Types || [],
+        fspQualifiedResources: Productions.FSPqualifiedResources || [],
+        
+        // Статистика города
+        cityStats: {
+            happinessBoost: Productions.HappinessBoost || 0,
+            populationSum: Productions.PopulationSum || 0,
+            happinessSum: Productions.HappinessSum || 0,
+            boosts: Productions.Boosts || {}
+        },
+        
+        // Настройки эффективности
+        efficiencySettings: Productions.efficiencySettings || {},
+        
+        // Рейтинг и пресеты
+        rating: {
+            data: Productions.Rating?.Data || {},
+            types: Productions.Rating?.Types || [],
+            presets: Productions.Rating?.Presets || {},
+            activePreset: Productions.Rating?.getActivePreset ? Productions.Rating.getActivePreset() : null
+        },
+        
+        // Группировка зданий по типам
+        buildingsByType: {},
+        
+        // Все возможные боевые бонусы по зданиям
+        battleBoosts: {
+            byBuilding: [],
+            summary: {
+                attacker: { attack: 0, defense: 0 },
+                defender: { attack: 0, defense: 0 },
+                byFeature: {
+                    all: { attackerAttack: 0, attackerDefense: 0, defenderAttack: 0, defenderDefense: 0 },
+                    battleground: { attackerAttack: 0, attackerDefense: 0, defenderAttack: 0, defenderDefense: 0 },
+                    guild_expedition: { attackerAttack: 0, attackerDefense: 0, defenderAttack: 0, defenderDefense: 0 },
+                    guild_raids: { attackerAttack: 0, attackerDefense: 0, defenderAttack: 0, defenderDefense: 0 }
+                }
+            }
+        },
+        
+        // Все возможные производственные бонусы
+        productionBoosts: {
+            forge_points_production: { total: 0, buildings: [] },
+            coin_production: { total: 0, buildings: [] },
+            supply_production: { total: 0, buildings: [] },
+            goods_production: { total: 0, buildings: [] },
+            special_goods_production: { total: 0, buildings: [] }
+        },
+        
+        // Все ресурсы производства
+        resources: {
+            strategy_points: { total: 0, motivated: 0, unmotivated: 0, buildings: [] },
+            money: { total: 0, motivated: 0, unmotivated: 0, buildings: [] },
+            supplies: { total: 0, motivated: 0, unmotivated: 0, buildings: [] },
+            medals: { total: 0, motivated: 0, unmotivated: 0, buildings: [] },
+            premium: { total: 0, buildings: [] },
+            goods: { total: 0, byEra: {}, buildings: [] },
+            clan_goods: { total: 0, byEra: {}, buildings: [] },
+            special_goods: { total: 0, buildings: [] },
+            units: { total: 0, byType: {}, buildings: [] },
+            items: { total: 0, byType: {}, buildings: [] }
+        },
+        
+        // Фрагменты и предметы
+        fragments: {
+            set: new Set(),
+            list: [],
+            byBuilding: []
+        },
+        
+        // Товары по эпохам (детально)
+        goodsByEra: {
+            previous: {},
+            current: {},
+            next: {}
+        },
+        
+        // Детальная информация по каждому зданию
+        buildingsDetailed: []
+    };
+    
+    // Обработка каждого здания
+    console.log(`📊 Обработка ${Productions.BuildingsAll.length} зданий...`);
+    
+    for (const building of Productions.BuildingsAll) {
+        if (!building) continue;
+        
+        // Размер здания
+        const sizeLength = building.size?.length || building.sizeLength || 1;
+        const sizeWidth = building.size?.width || building.sizeWidth || 1;
+        const sizeTiles = sizeLength * sizeWidth;
+        
+        // Базовая информация о здании
+        const buildingDetail = {
+            id: building.id,
+            entityId: building.entityId,
+            name: building.name,
+            type: building.type,
+            era: building.eraName,
+            size: `${sizeLength}x${sizeWidth}`,
+            sizeTiles: sizeTiles,
+            population: building.population || 0,
+            happiness: building.happiness || 0,
+            isBoostable: building.isBoostable || false,
+            isPolivated: building.state?.isPolivated || false,
+            isCollectable: building.state?.name === 'collectable',
+            collectTime: building.state?.times?.at || null,
+            needsStreet: building.needsStreet || 0,
+            setBuilding: building.setBuilding?.name || null,
+            chainBuilding: building.chainBuilding?.name || null,
+            boosts: [],
+            productions: [],
+            goodsProduction: {},
+            guildGoodsProduction: {},
+            battleStats: {
+                attackerAttack: 0,
+                attackerDefense: 0,
+                defenderAttack: 0,
+                defenderDefense: 0,
+                byFeature: {}
+            },
+            productionBonuses: {
+                fp: 0,
+                coins: 0,
+                supplies: 0,
+                goods: 0
+            }
+        };
+        
+        // Сбор всех бонусов
+        if (building.boosts && Array.isArray(building.boosts)) {
+            for (const boost of building.boosts) {
+                if (!boost || !boost.type) continue;
+                
+                const boostTypes = Array.isArray(boost.type) ? boost.type : [boost.type];
+                const boostValue = boost.value || 0;
+                const boostFeature = boost.feature || 'all';
+                
+                for (const bt of boostTypes) {
+                    buildingDetail.boosts.push({
+                        type: bt,
+                        value: boostValue,
+                        feature: boostFeature
+                    });
+                    
+                    // Боевые бонусы
+                    if (bt === 'att_boost_attacker') {
+                        buildingDetail.battleStats.attackerAttack += boostValue;
+                        fullData.battleBoosts.summary.attacker.attack += boostValue;
+                        fullData.battleBoosts.summary.byFeature[boostFeature].attackerAttack += boostValue;
+                    }
+                    if (bt === 'def_boost_attacker') {
+                        buildingDetail.battleStats.attackerDefense += boostValue;
+                        fullData.battleBoosts.summary.attacker.defense += boostValue;
+                        fullData.battleBoosts.summary.byFeature[boostFeature].attackerDefense += boostValue;
+                    }
+                    if (bt === 'att_boost_defender') {
+                        buildingDetail.battleStats.defenderAttack += boostValue;
+                        fullData.battleBoosts.summary.defender.attack += boostValue;
+                        fullData.battleBoosts.summary.byFeature[boostFeature].defenderAttack += boostValue;
+                    }
+                    if (bt === 'def_boost_defender') {
+                        buildingDetail.battleStats.defenderDefense += boostValue;
+                        fullData.battleBoosts.summary.defender.defense += boostValue;
+                        fullData.battleBoosts.summary.byFeature[boostFeature].defenderDefense += boostValue;
+                    }
+                    
+                    // Производственные бонусы
+                    if (bt === 'forge_points_production') {
+                        buildingDetail.productionBonuses.fp = boostValue;
+                        fullData.productionBoosts.forge_points_production.total += boostValue;
+                        fullData.productionBoosts.forge_points_production.buildings.push({ name: building.name, value: boostValue });
+                    }
+                    if (bt === 'coin_production') {
+                        buildingDetail.productionBonuses.coins = boostValue;
+                        fullData.productionBoosts.coin_production.total += boostValue;
+                        fullData.productionBoosts.coin_production.buildings.push({ name: building.name, value: boostValue });
+                    }
+                    if (bt === 'supply_production') {
+                        buildingDetail.productionBonuses.supplies = boostValue;
+                        fullData.productionBoosts.supply_production.total += boostValue;
+                        fullData.productionBoosts.supply_production.buildings.push({ name: building.name, value: boostValue });
+                    }
+                    if (bt === 'goods_production') {
+                        buildingDetail.productionBonuses.goods = boostValue;
+                        fullData.productionBoosts.goods_production.total += boostValue;
+                        fullData.productionBoosts.goods_production.buildings.push({ name: building.name, value: boostValue });
+                    }
+                }
+            }
+        }
+        
+        // Сбор производства
+        const allProductions = [
+            ...(building.production || []),
+            ...(building.state?.production || [])
+        ];
+        
+        for (const prod of allProductions) {
+            if (!prod) continue;
+            
+            // Ресурсы
+            if (prod.type === 'resources' && prod.resources) {
+                for (const [resType, amount] of Object.entries(prod.resources)) {
+                    if (amount > 0) {
+                        const prodInfo = {
+                            type: 'resources',
+                            resource: resType,
+                            amount: amount,
+                            doubleWhenMotivated: prod.doubleWhenMotivated || false
+                        };
+                        buildingDetail.productions.push(prodInfo);
+                        
+                        // Суммирование ресурсов
+                        let finalAmount = amount;
+                        if (building.isBoostable && building.isPolivated && prod.doubleWhenMotivated) {
+                            finalAmount = amount * 2;
+                        }
+                        
+                        if (resType === 'strategy_points') {
+                            fullData.resources.strategy_points.total += finalAmount;
+                            if (building.isPolivated) fullData.resources.strategy_points.motivated += finalAmount;
+                            else fullData.resources.strategy_points.unmotivated += amount;
+                            fullData.resources.strategy_points.buildings.push({ name: building.name, amount: finalAmount, motivated: building.isPolivated });
+                        }
+                        if (resType === 'money') {
+                            fullData.resources.money.total += finalAmount;
+                            if (building.isPolivated) fullData.resources.money.motivated += finalAmount;
+                            else fullData.resources.money.unmotivated += amount;
+                            fullData.resources.money.buildings.push({ name: building.name, amount: finalAmount });
+                        }
+                        if (resType === 'supplies') {
+                            fullData.resources.supplies.total += finalAmount;
+                            if (building.isPolivated) fullData.resources.supplies.motivated += finalAmount;
+                            else fullData.resources.supplies.unmotivated += amount;
+                            fullData.resources.supplies.buildings.push({ name: building.name, amount: finalAmount });
+                        }
+                        if (resType === 'medals') {
+                            fullData.resources.medals.total += amount;
+                            fullData.resources.medals.buildings.push({ name: building.name, amount: amount });
+                        }
+                        if (resType === 'premium') {
+                            fullData.resources.premium.total += amount;
+                            fullData.resources.premium.buildings.push({ name: building.name, amount: amount });
+                        }
+                        if (resType.includes('good')) {
+                            fullData.resources.goods.total += amount;
+                            fullData.resources.goods.buildings.push({ name: building.name, good: resType, amount: amount });
+                            
+                            // Группировка по эпохам
+                            const era = building.eraName || 'unknown';
+                            if (!fullData.resources.goods.byEra[era]) fullData.resources.goods.byEra[era] = 0;
+                            fullData.resources.goods.byEra[era] += amount;
+                        }
+                    }
+                }
+            }
+            
+            // Гильдейские товары
+            if (prod.type === 'guildResources' && prod.resources) {
+                const amount = prod.resources.all_goods_of_age || Object.values(prod.resources)[0] || 0;
+                buildingDetail.productions.push({
+                    type: 'guildResources',
+                    resource: 'clan_goods',
+                    amount: amount
+                });
+                fullData.resources.clan_goods.total += amount;
+                fullData.resources.clan_goods.buildings.push({ name: building.name, amount: amount });
+                
+                const era = building.eraName || 'unknown';
+                if (!fullData.resources.clan_goods.byEra[era]) fullData.resources.clan_goods.byEra[era] = 0;
+                fullData.resources.clan_goods.byEra[era] += amount;
+            }
+            
+            // Специальные товары
+            if (prod.type === 'special_goods' && prod.resources) {
+                let total = 0;
+                for (const val of Object.values(prod.resources)) {
+                    if (typeof val === 'number') total += val;
+                }
+                buildingDetail.productions.push({
+                    type: 'special_goods',
+                    resource: 'special_goods',
+                    amount: total
+                });
+                fullData.resources.special_goods.total += total;
+                fullData.resources.special_goods.buildings.push({ name: building.name, amount: total });
+            }
+            
+            // Юниты
+            if (prod.type === 'unit' && prod.resources) {
+                for (const [unitType, amount] of Object.entries(prod.resources)) {
+                    if (amount > 0) {
+                        buildingDetail.productions.push({
+                            type: 'unit',
+                            resource: unitType,
+                            amount: amount
+                        });
+                        fullData.resources.units.total += amount;
+                        if (!fullData.resources.units.byType[unitType]) fullData.resources.units.byType[unitType] = 0;
+                        fullData.resources.units.byType[unitType] += amount;
+                        fullData.resources.units.buildings.push({ name: building.name, unit: unitType, amount: amount });
+                    }
+                }
+            }
+            
+            // Случайные производства
+            if (prod.type === 'random' && prod.resources && Array.isArray(prod.resources)) {
+                for (const res of prod.resources) {
+                    if (res && res.type) {
+                        const expectedValue = (res.amount || 0) * (res.dropChance || 0);
+                        if (expectedValue > 0) {
+                            buildingDetail.productions.push({
+                                type: 'random',
+                                resource: res.name || res.type,
+                                amount: res.amount,
+                                dropChance: res.dropChance,
+                                expectedValue: expectedValue
+                            });
+                            
+                            if (res.type === 'unit') {
+                                fullData.resources.units.total += expectedValue;
+                                if (!fullData.resources.units.byType[res.name]) fullData.resources.units.byType[res.name] = 0;
+                                fullData.resources.units.byType[res.name] += expectedValue;
+                            }
+                            if (res.type === 'consumable') {
+                                fullData.resources.items.total += expectedValue;
+                                if (!fullData.resources.items.byType[res.name]) fullData.resources.items.byType[res.name] = 0;
+                                fullData.resources.items.byType[res.name] += expectedValue;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Предметы
+            if (prod.type === 'genericReward' && prod.resources) {
+                const isFragment = prod.resources.subType === 'fragment';
+                buildingDetail.productions.push({
+                    type: 'genericReward',
+                    resource: prod.resources.name,
+                    amount: prod.resources.amount,
+                    isFragment: isFragment
+                });
+                
+                if (isFragment) {
+                    fullData.fragments.set.add(prod.resources.name);
+                    fullData.fragments.list.push({
+                        name: prod.resources.name,
+                        building: building.name,
+                        amount: prod.resources.amount
+                    });
+                }
+            }
+        }
+        
+        // Товары по эпохам (используем функцию из Productions если есть)
+        if (typeof CityBuildings !== 'undefined') {
+            try {
+                const goodsByEra = CityBuildings.getBuildingGoodsByEra(false, building, true);
+                if (goodsByEra && goodsByEra.eras) {
+                    buildingDetail.goodsProduction = goodsByEra.eras;
+                    for (const [era, amount] of Object.entries(goodsByEra.eras)) {
+                        const eraNum = parseInt(era);
+                        const currentEraNum = typeof CurrentEra !== 'undefined' ? CurrentEra : 0;
+                        
+                        if (eraNum === currentEraNum - 1) {
+                            if (!fullData.goodsByEra.previous[building.name]) fullData.goodsByEra.previous[building.name] = 0;
+                            fullData.goodsByEra.previous[building.name] += amount;
+                        }
+                        if (eraNum === currentEraNum) {
+                            if (!fullData.goodsByEra.current[building.name]) fullData.goodsByEra.current[building.name] = 0;
+                            fullData.goodsByEra.current[building.name] += amount;
+                        }
+                        if (eraNum === currentEraNum + 1) {
+                            if (!fullData.goodsByEra.next[building.name]) fullData.goodsByEra.next[building.name] = 0;
+                            fullData.goodsByEra.next[building.name] += amount;
+                        }
+                    }
+                }
+                
+                const guildGoodsByEra = CityBuildings.getBuildingGuildGoodsByEra(false, building, true);
+                if (guildGoodsByEra && guildGoodsByEra.eras) {
+                    buildingDetail.guildGoodsProduction = guildGoodsByEra.eras;
+                }
+            } catch(e) {}
+        }
+        
+        // Группировка по типам
+        if (!fullData.buildingsByType[building.type]) fullData.buildingsByType[building.type] = [];
+        fullData.buildingsByType[building.type].push(building.name);
+        
+        fullData.buildingsDetailed.push(buildingDetail);
+        
+        // Добавляем в список зданий с боевыми бонусами
+        if (buildingDetail.battleStats.attackerAttack > 0 || 
+            buildingDetail.battleStats.attackerDefense > 0 ||
+            buildingDetail.battleStats.defenderAttack > 0 ||
+            buildingDetail.battleStats.defenderDefense > 0) {
+            fullData.battleBoosts.byBuilding.push(buildingDetail);
+        }
+    }
+    
+    // Преобразуем Set в массив
+    fullData.fragments.set = Array.from(fullData.fragments.set);
+    
+    // Вывод статистики в консоль
+    console.log('\n%c📊 ИТОГОВАЯ СТАТИСТИКА:', 'color: #ffd700; font-size: 16px; font-weight: bold;');
+    console.log(`🏗️ Всего зданий: ${fullData.buildings.length}`);
+    console.log(`⚔️ Зданий с боевыми бонусами: ${fullData.battleBoosts.byBuilding.length}`);
+    console.log(`💰 Всего FP в час: ${fullData.resources.strategy_points.total}`);
+    console.log(`🪙 Всего монет в час: ${fullData.resources.money.total.toLocaleString()}`);
+    console.log(`📦 Всего припасов в час: ${fullData.resources.supplies.total.toLocaleString()}`);
+    console.log(`📦 Всего товаров: ${fullData.resources.goods.total.toLocaleString()}`);
+    console.log(`🏰 Гильдейских товаров: ${fullData.resources.clan_goods.total.toLocaleString()}`);
+    console.log(`⚔️ Юнитов: ${fullData.resources.units.total}`);
+    console.log(`🧩 Фрагментов: ${fullData.fragments.set.length}`);
+    
+    console.log('\n%c⚔️ БОЕВЫЕ БОНУСЫ (суммарно):', 'color: #ff6b6b; font-size: 13px;');
+    console.log(`  Атакующий:  Атака +${fullData.battleBoosts.summary.attacker.attack}% | Защита +${fullData.battleBoosts.summary.attacker.defense}%`);
+    console.log(`  Защитник:   Атака +${fullData.battleBoosts.summary.defender.attack}% | Защита +${fullData.battleBoosts.summary.defender.defense}%`);
+    
+    console.log('\n%c🏭 ПРОИЗВОДСТВЕННЫЕ БОНУСЫ:', 'color: #4ecdc4; font-size: 13px;');
+    console.log(`  Производство FP: +${fullData.productionBoosts.forge_points_production.total}%`);
+    console.log(`  Производство монет: +${fullData.productionBoosts.coin_production.total}%`);
+    console.log(`  Производство припасов: +${fullData.productionBoosts.supply_production.total}%`);
+    console.log(`  Производство товаров: +${fullData.productionBoosts.goods_production.total}%`);
+    
+    // Сохраняем в глобальную переменную
+    window.FoEAllData = fullData;
+    
+    // Скачиваем JSON
+    const jsonStr = JSON.stringify(fullData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `foe_complete_data_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    console.log('\n%c✅ ГОТОВО!', 'color: #00ff00; font-size: 14px; font-weight: bold;');
+    console.log(`📁 Файл скачан: foe_complete_data_${Date.now()}.json`);
+    console.log(`📦 Размер: ${(jsonStr.length / 1024).toFixed(2)} KB`);
+    console.log('\n💡 Данные доступны в window.FoEAllData');
+    console.log('💡 Для просмотра введите: console.log(window.FoEAllData)');
+    
+    return fullData;
+})();
