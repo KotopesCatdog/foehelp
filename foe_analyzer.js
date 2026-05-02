@@ -180,8 +180,9 @@ function extractAllProductions(b) {
         if (!p) continue;
 
         // === resources (прямые ресурсы) ===
-        if (p.type === "resources" && p.resources) {
-            for (const [k, v] of Object.entries(p.resources)) {
+        if (p.type === "resources" && p.resources && !Array.isArray(p.resources)) {
+            for (const [k, raw] of Object.entries(p.resources)) {
+                const v = Number(raw) || 0;
                 if (k === "strategy_points") fp += v;
                 else if (k === "money") money += v;
                 else if (k === "supplies") supplies += v;
@@ -349,7 +350,7 @@ function perTile(b, value) {
     return coef ? +(value / coef).toFixed(2) : value;
 }
 
-function nz(v) { return v ? (Number.isInteger(v) ? v : +v.toFixed(2)) : ''; }
+function nz(v) { v = Number(v) || 0; return v ? (Number.isInteger(v) ? v : +v.toFixed(2)) : ''; }
 function fmtSize(b) { return b.size ? (b.size.width + "×" + b.size.length) : ""; }
 function isInv(b) { return (b.isInInventory || b.id === 0) ? "✔" : ""; }
 function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
